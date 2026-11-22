@@ -1,0 +1,454 @@
+@import url('https://fonts.googleapis.com/css2?family=Coiny&family=Titan+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nerko+One&family=Sriracha&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --color-pink: #feecea;
+    --color-white: #fff;
+    --color-black: #333;
+    --color-text-pink: #ff7882;
+    --color-heart: #ff7882;
+    --color-bg-letter: #fff8e4;
+    --color-border: #daccbf;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    background: var(--color-pink);
+    font-size: 16px;
+}
+
+#wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--color-pink);
+    background-image:
+        linear-gradient(0deg, transparent 24%, rgba(255,255,255,.9) 25%, rgba(255,255,255,.9) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.9) 75%, rgba(255,255,255,.9) 76%, transparent 77%),
+        linear-gradient(90deg, transparent 24%, rgba(255,255,255,.9) 25%, rgba(255,255,255,.9) 26%, transparent 27%, transparent 74%, rgba(255,255,255,.9) 75%, rgba(255,255,255,.9) 76%, transparent 77%);
+    background-size: 80px 80px;
+}
+
+.flag__birthday {
+    display: flex;
+    justify-content: space-between;
+    animation: translateYFlag 1.5s 2s forwards;
+    transform: translateY(-200px);
+}
+
+@keyframes translateYFlag {
+    to { transform: translateY(-10px); }
+}
+
+.flag__birthday .flag__left { transform: rotate(-10deg) translate(-20px,30px); }
+.flag__birthday .flag__right { transform: rotate(10deg) translate(20px,30px) scaleX(-1); }
+
+.content {
+    position: relative;
+    display: flex;
+    width: 100%;
+    padding-top: 3rem;
+}
+
+.content .left,
+.content .right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.content .left { width: 40%; }
+.content .right { width: 60%; }
+
+.title {
+    position: relative;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    font-family: "Titan One", sans-serif;
+    font-size: 3rem;
+    perspective: 1000px;
+}
+
+.title .happy,
+.title .birthday {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
+    text-shadow: 4px 4px var(--color-black), -4px 4px var(--color-black), 4px -4px var(--color-black), -4px -4px var(--color-black), 4px 8px 0 var(--color-black);
+}
+
+.title .happy { color: var(--color-white); }
+.title .birthday { color: var(--color-text-pink); }
+
+.title .happy span,
+.title .birthday span {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(50px);
+    animation: txtTranslateY .5s var(--t) forwards;
+}
+
+@keyframes txtTranslateY {
+    100% { opacity: 1; visibility: visible; transform: translateY(0); }
+}
+
+.title .hat {
+    position: absolute;
+    z-index: -1;
+    top: -350px;
+    right: 45px;
+    transform: rotate(-40deg);
+    animation: topHat 4s 7s forwards ease;
+}
+
+@keyframes topHat {
+    20%,30% { top: -30px; transform-origin: left; transform: rotate(-40deg); }
+    35%,100% { top: -30px; transform: rotate(0deg); }
+}
+
+.date__of__birth,
+.name {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 20px;
+    border-radius: 50px;
+    background: var(--color-text-pink);
+    font-family: "Sriracha", cursive;
+}
+
+.date__of__birth {
+    position: relative;
+    z-index: -1;
+    width: 0;
+    height: 0;
+    border: 3px solid var(--color-black);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-100px);
+    animation: dateOfBirth 5s 9s forwards;
+}
+
+@keyframes dateOfBirth {
+    20%,40% { width: 0; height: 0; opacity: 1; visibility: visible; transform: translateY(0); }
+    45% { width: 300px; height: 0; opacity: 1; visibility: visible; transform: translateY(0); }
+    50%,100% { width: 300px; height: 50px; opacity: 1; visibility: visible; transform: translateY(0); }
+}
+
+.name {
+    position: absolute;
+    bottom: -20px;
+    padding: 0 20px;
+    border: 3px solid var(--color-black);
+    font-family: 'Dancing Script', cursive;
+}
+
+.date__of__birth span { margin: 0 40px; font-size: 1.2rem; font-weight: bold; }
+.name span { margin: 0 12px; font-size: 1.7rem; font-weight: bold; }
+
+.left .btn { transform: scale(0); animation: scaleCricle 2s 16s forwards ease-in-out; }
+
+#btn__letter {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px;
+    padding: 7px 16px;
+    border: 3px solid var(--color-black);
+    border-radius: 50px;
+    outline: none;
+    background: var(--color-text-pink);
+    font-family: "Sriracha", cursive;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all .5s ease-in-out;
+}
+
+#btn__letter:hover {
+    border-color: var(--color-heart);
+    background: var(--color-heart);
+    color: #fff;
+    box-shadow: rgba(0,0,0,.24) 0 3px 8px;
+}
+
+#btn__letter:active { transform: scale(.7); }
+#btn__letter i { margin-left: 5px; }
+
+.right .box__account {
+    position: relative;
+    transform: translateY(700px);
+    animation: topBoxImage 8s 7s forwards ease-in;
+}
+
+@keyframes topBoxImage { to { transform: translateY(0); } }
+
+.content .right .image {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 400px;
+    height: 400px;
+    overflow: hidden;
+    border: 6px solid var(--color-black);
+    border-radius: 50%;
+    background: #ffdce1;
+}
+
+.content .right .image img { width: 100%; height: 100%; object-fit: cover; }
+
+.cricle {
+    position: absolute;
+    top: 20px;
+    right: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: scale(0);
+    animation: scaleCricle 3s 15s forwards ease-in-out;
+}
+
+@keyframes scaleCricle {
+    0% { transform: scale(0); }
+    10% { transform: scale(1.3); }
+    20% { transform: scale(.7); }
+    30%,100% { transform: scale(1); }
+}
+
+.text__cricle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border: 5px solid var(--color-black);
+    border-radius: 50%;
+    background: var(--color-text-pink);
+    animation: rotateCricle 5s linear infinite;
+}
+
+@keyframes rotateCricle { to { transform: rotate(360deg); } }
+
+.text__cricle span {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: rotate(calc(var(--i) * 24deg));
+    transform-origin: 0 45px;
+    color: var(--color-black);
+    font-family: "Sriracha", cursive;
+    font-size: .7rem;
+    text-transform: uppercase;
+}
+
+.fa-heart { color: var(--color-heart); filter: drop-shadow(0 0 3px var(--color-heart)); animation: scaleHeart 1s infinite linear; }
+.cricle .fa-heart { position: absolute; transform: scale(.85); }
+
+@keyframes scaleHeart { 50% { transform: scale(1.2); } }
+
+.right .balloon_one { position: absolute; top: -70px; left: -70px; animation: balloon1 2s infinite linear; }
+.right .balloon_two { position: absolute; z-index: -1; top: 170px; right: -65px; transform: rotate(10deg); animation: balloon2 2s infinite linear; }
+
+@keyframes balloon1 {
+    0%,50%,100% { transform-origin: bottom right; transform: rotate(0); }
+    25% { transform-origin: bottom right; transform: rotate(3deg); }
+    75% { transform-origin: bottom right; transform: rotate(-3deg); }
+}
+
+@keyframes balloon2 {
+    0%,50%,100% { transform-origin: bottom left; transform: rotate(10deg); }
+    25% { transform-origin: bottom left; transform: rotate(7deg); }
+    75% { transform-origin: bottom left; transform: rotate(13deg); }
+}
+
+.decorate_star {
+    position: absolute;
+    background: var(--color-black);
+    clip-path: polygon(0 50%,35% 35%,50% 0,65% 35%,100% 50%,65% 65%,50% 100%,35% 65%);
+    transform: scale(0);
+    animation: scaleCricle 3s var(--t) forwards, scaleStar 2s 16s infinite ease-in-out;
+}
+
+.decorate_star.star1 { width: 20px; height: 20px; top: 75px; left: 300px; }
+.decorate_star.star2 { width: 15px; height: 20px; top: 35px; right: 360px; }
+.decorate_star.star3 { width: 14px; height: 14px; top: 290px; left: 630px; }
+.decorate_star.star4 { width: 18px; height: 18px; bottom: 60px; left: 35px; }
+.decorate_star.star5 { width: 16px; height: 18px; bottom: 140px; left: 500px; }
+
+@keyframes scaleStar { 25% { transform: scale(.8); } 50% { transform: scale(1.1); } }
+
+.decorate_bottom { position: absolute; right: 0; bottom: -10px; }
+.decorate_flower--one { position: absolute; top: 250px; left: 50px; transform: scale(0); animation: scaleCricle 3s var(--t) forwards; }
+.decorate_flower--two { position: absolute; top: 225px; left: 540px; transform: scale(0); animation: scaleCricle 3s var(--t) forwards; }
+.decorate_flower--three { position: absolute; top: 150px; right: 235px; transform: scale(0); animation: scaleCricle 3s var(--t) forwards; }
+.smiley__icon { position: absolute; bottom: 180px; left: 600px; transform: scale(0); animation: scaleCricle 3s 15s forwards; }
+
+.boxMail {
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.8);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(.3);
+    transition: all .5s;
+}
+
+.boxMail.active { opacity: 1; visibility: visible; transform: scale(1); }
+
+.boxMail .boxMail-container {
+    position: relative;
+    display: flex;
+    width: 750px;
+    height: 500px;
+    transform: scale(.9);
+    perspective: 2000px;
+    transition: all .5s;
+}
+
+.boxMail .boxMail-container:hover { transform: rotate(-5deg); filter: drop-shadow(0 0 10px #ff7882); }
+.boxMail .boxMail-container:hover .card1 { transform: translate(-187px,-250px) rotateY(-140deg); }
+
+.boxMail .boxMail-container .card1,
+.boxMail .boxMail-container .card2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    border: 1px solid #333;
+    transform: translate(-50%,-50%);
+}
+
+.boxMail .boxMail-container .card1 {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(to right,#ff7882,#ff7882 63%);
+    color: white;
+    transform-style: preserve-3d;
+    transform-origin: left;
+    transition: all 1s ease-in-out;
+}
+
+.boxMail .boxMail-container .card1 .userImg {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: white;
+}
+
+.boxMail .boxMail-container .card1 .userImg img { width: 100%; height: 100%; object-fit: cover; }
+
+.boxMail .boxMail-container .card1 h3 {
+    width: 80%;
+    text-align: center;
+    font-family: 'Dancing Script', cursive;
+    font-size: 40px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px white, 0 0 10px white;
+}
+
+.boxMail .boxMail-container .card1 .username { margin-bottom: 15px; font-family: 'Dancing Script', cursive; }
+
+.boxMail .boxMail-container .card2 {
+    background: #fff;
+    transform-style: preserve-3d;
+    transform-origin: left;
+    transition: all 1s;
+}
+
+.boxMail .boxMail-container .card2 .card2-content {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #ff7882;
+    color: #fff;
+    transition: all 1s;
+}
+
+.boxMail .boxMail-container:hover .card2-content { transform: translate(20px,20px); box-shadow: -1px -1px 5px rgba(0,0,0,.4); }
+
+.boxMail .boxMail-container .card2 h3 {
+    padding: 20px 0 10px 152px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 25px;
+}
+
+.boxMail .boxMail-container .card2 h2 {
+    padding: 0 20px;
+    text-indent: 20px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 22px;
+    line-height: 1.35;
+}
+
+.boxMail .fa-xmark {
+    position: fixed;
+    z-index: 101;
+    top: 0;
+    right: 0;
+    padding: 10px 25px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 658px) {
+    body { overflow-y: auto; }
+    .flag__birthday .flag__left { transform: rotate(-10deg) translate(-119px,3px); }
+    .flag__birthday .flag__right { transform: rotate(10deg) translate(-106px,39px) scaleX(-1); }
+
+    .content { align-items: center; flex-direction: column; gap: 25px; padding-top: 2rem; }
+    .content .left, .content .right { width: 100%; }
+
+    .title { font-size: 1.5rem; letter-spacing: 8px; }
+    .title .hat { top: -51px !important; right: -98px; }
+
+    #btn__letter { width: 209px; padding: 6px 4px; }
+    .cricle { top: 10px; right: -54px; }
+
+    .content .right .image { width: 200px; height: 200px; }
+    .name { bottom: -6px; padding: 0 3px; }
+    .name span { font-size: 1rem; }
+
+    .right .balloon_one { top: 10px; left: -77px; }
+    .right .balloon_one img { width: 76px !important; }
+
+    .boxMail .boxMail-container { width: 92vw; height: 420px; }
+    .boxMail .boxMail-container .card2 h2 { font-size: 15px; }
+    .boxMail .boxMail-container .card1 h3 { font-size: 26px; }
+}
