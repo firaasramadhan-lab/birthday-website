@@ -25,6 +25,7 @@
     .hero-actions { display:flex; gap:12px; margin-top:28px; }
     .primary,.secondary { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 20px; border-radius:14px; border:0; font-weight:800; cursor:pointer; }
     .primary { background:var(--orange); color:white; box-shadow:0 12px 24px #ff6b3538; }
+    .primary:disabled { opacity:.55; cursor:not-allowed; box-shadow:none; }
     .secondary { background:white; border:1px solid #ead9cb; }
     .hero-art { position:relative; display:grid; place-items:center; min-height:360px; }
     .hero-circle { width:min(360px,78vw); aspect-ratio:1; display:grid; place-items:center; border-radius:50%; background:linear-gradient(145deg,#ffc66b,#ff7b4d); box-shadow:0 30px 60px #bb572b2e; font-size:150px; transform:rotate(-8deg); }
@@ -49,7 +50,7 @@
     .cart-fab.pop { animation:pop .35s ease; } @keyframes pop { 50% { transform:scale(1.12); } }
     #cartCount { display:grid; place-items:center; min-width:25px; height:25px; border-radius:50%; background:white; color:var(--orange); }
     #backdrop { position:fixed; z-index:39; inset:0; background:#25170e66; backdrop-filter:blur(3px); }
-    .sheet { position:fixed; z-index:40; right:0; bottom:0; width:min(430px,100%); height:100%; padding:24px; background:white; transform:translateX(100%); transition:.35s ease; box-shadow:-20px 0 50px #2d1b1226; }
+    .sheet { position:fixed; z-index:40; right:0; bottom:0; width:min(430px,100%); height:100%; overflow-y:auto; padding:24px; background:white; transform:translateX(100%); transition:.35s ease; box-shadow:-20px 0 50px #2d1b1226; }
     .sheet.open { transform:translateX(0); }
     .sheet-head { display:flex; align-items:center; justify-content:space-between; }
     #closeSheet { width:38px; height:38px; border:0; border-radius:50%; background:#f2eee9; cursor:pointer; }
@@ -85,7 +86,7 @@
   </main>
   <button class="cart-fab" id="cartFab" aria-label="Buka keranjang">🛒 <span>Pesanan</span><span id="cartCount">0</span></button>
   <div id="backdrop" hidden></div>
-  <aside class="sheet" id="sheet" aria-hidden="true"><div class="sheet-head"><h2>Pesananmu</h2><button id="closeSheet" aria-label="Tutup">✕</button></div><p id="cartEmpty">Keranjang masih kosong.</p><ul id="cartList"></ul><p id="cartTotal" hidden></p><div class="checkout"><input id="custName" placeholder="Nama kamu" autocomplete="name"><textarea id="custNote" placeholder="Catatan pesanan (opsional)"></textarea><button class="primary" id="sendWA">Kirim Pesanan via WhatsApp</button></div></aside>
+  <aside class="sheet" id="sheet" aria-hidden="true"><div class="sheet-head"><h2>Pesananmu</h2><button id="closeSheet" aria-label="Tutup">✕</button></div><p id="cartEmpty">Keranjang masih kosong.</p><ul id="cartList"></ul><p id="cartTotal" hidden></p><button type="button" id="clearCart" class="secondary" style="width:100%;margin:8px 0">Kosongkan Pesanan</button><div class="checkout"><input id="custName" placeholder="Nama kamu" autocomplete="name"><textarea id="custNote" placeholder="Catatan pesanan (opsional)"></textarea><button type="button" class="primary" id="sendWA">Kirim Pesanan via WhatsApp</button></div></aside>
   <div class="toast" id="toast"></div>
   <footer>© <span id="year"></span> Zemil.in — Cemilan rumahan yang bikin hari lebih seru.</footer>
 <script>
@@ -187,19 +188,27 @@ function updateCart() {
   const totalEl = $("#cartTotal");
   totalEl.hidden = !(ids.length && total > 0);
   totalEl.textContent = (allPriced ? "Total: " : "Perkiraan (belum semua ada harga): ") + rupiah(total);
+
+  const sendButton = $("#sendWA");
+  if (sendButton) sendButton.disabled = ids.length === 0;
 }
 
 $("#cartList").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-id]");
   if (!b) return;
   cart[b.dataset.id] = Math.max(0, cart[b.dataset.id] + Number(b.dataset.d));
+  if (cart[b.dataset.id] === 0) delete cart[b.dataset.id];
   updateCart();
 });
 
-$("#clearCart").addEventListener("click", () => {
-  Object.keys(cart).forEach(k => delete cart[k]);
-  updateCart();
-});
+const clearCartButton = $("#clearCart");
+if (clearCartButton) {
+  clearCartButton.addEventListener("click", () => {
+    Object.keys(cart).forEach(k => delete cart[k]);
+    updateCart();
+    toast("Pesanan dikosongkan");
+  });
+}
 
 const sheet = $("#sheet"), backdrop = $("#backdrop");
 function openSheet(open) {
@@ -253,3 +262,288 @@ updateCart();
 </script>
 </body>
 </html>
+/* ==========================================================
+   cart-ui.js – Keranjang pesanan Zemil.in
+   Satu file, tanpa library. CSS dan HTML panel dibuat otomatis.
+   Cara pakai: <script src="cart-ui.js"></script> sebelum </body>
+   ========================================================== */
+(function () {
+  "use strict";
+
+  /* ---------- PENGATURAN (boleh diubah lewat window.ZEMIL_CART_CONFIG) ---------- */
+  const cfg = Object.assign({
+    whatsapp: "6281389900332",   // 0813-8990-0332 format internasional
+    store: "Zemil.in",
+    openButton: null,            // contoh: "#btnPesanan". Kosong = dicari otomatis
+    badge: null,                 // contoh: "#cartCount". Kosong = dicari otomatis
+    menuHref: "#menu",
+    accent: "#FF6B35",           // warna utama tombol
+    ink: "#2A1A10",              // warna teks
+    storageKey: "zemil-cart-v1"
+  }, window.ZEMIL_CART_CONFIG || {});
+
+  /* ---------- STATE ---------- */
+  let items = [];
+  try { items = JSON.parse(localStorage.getItem(cfg.storageKey)) || []; } catch (e) { items = []; }
+  const listeners = [];
+  let lastFocus = null;
+
+  const rp = (n) => "Rp" + Number(n).toLocaleString("id-ID");
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+  /* ---------- CSS ---------- */
+  const css = `
+  .zc-root{--a:${cfg.accent};--ink:${cfg.ink};--soft:#FFF4E8;--line:#F1E3D3;
+    position:fixed;inset:0;z-index:9999;visibility:hidden;transition:visibility 0s .3s;
+    font-family:inherit;color:var(--ink)}
+  .zc-root.zc-open{visibility:visible;transition-delay:0s}
+  .zc-backdrop{position:absolute;inset:0;background:rgba(30,15,5,.5);opacity:0;transition:opacity .3s}
+  .zc-open .zc-backdrop{opacity:1}
+  .zc-panel{position:absolute;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;
+    display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease;
+    box-shadow:-12px 0 40px rgba(0,0,0,.2);outline:none}
+  .zc-open .zc-panel{transform:none}
+  .zc-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .zc-head h2{font-size:1.3rem;margin:0}
+  .zc-x{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:1rem;color:var(--ink)}
+  .zc-x:hover{background:var(--soft)}
+  .zc-body{flex:1;overflow-y:auto;padding:16px 20px}
+  .zc-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+  .zc-item{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;
+    padding:10px;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .zc-thumb{width:56px;height:56px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:1.8rem;overflow:hidden}
+  .zc-thumb img{width:100%;height:100%;object-fit:cover}
+  .zc-name{font-weight:800;line-height:1.2}
+  .zc-price{font-size:.85rem;opacity:.7;margin-top:2px}
+  .zc-qty{display:flex;align-items:center;gap:6px}
+  .zc-qty button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--soft);
+    font-weight:800;font-size:1.05rem;cursor:pointer;color:var(--ink)}
+  .zc-qty button:hover{background:var(--a);color:#fff;border-color:var(--a)}
+  .zc-qty b{min-width:22px;text-align:center}
+  .zc-del{grid-column:1/-1;justify-self:end;background:none;border:0;color:#B3341A;font-weight:700;
+    font-size:.82rem;cursor:pointer;padding:0;margin-top:-4px}
+  .zc-empty{text-align:center;padding:36px 8px}
+  .zc-empty .big{font-size:3rem}
+  .zc-empty p{margin:8px 0 16px;opacity:.75}
+  .zc-link{display:inline-block;background:var(--a);color:#fff;text-decoration:none;font-weight:800;padding:11px 22px;border-radius:999px}
+  .zc-form{margin-top:18px;display:grid;gap:6px}
+  .zc-form label{font-weight:800;font-size:.9rem;margin-top:6px}
+  .zc-form input,.zc-form textarea{width:100%;font:inherit;color:var(--ink);padding:11px 13px;border:1px solid var(--line);
+    border-radius:12px;background:#fff;resize:vertical}
+  .zc-form input:focus,.zc-form textarea:focus{outline:2px solid var(--a);border-color:transparent}
+  .zc-err{color:#B3341A;font-weight:700;font-size:.88rem;min-height:1.2em;margin-top:6px}
+  .zc-foot{padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:#fff}
+  .zc-sum{display:flex;justify-content:space-between;margin-bottom:6px}
+  .zc-sum b{font-size:1.05rem}
+  .zc-note{font-size:.8rem;opacity:.65;margin:2px 0 10px}
+  .zc-send{width:100%;border:0;border-radius:999px;background:var(--a);color:#fff;font:800 1rem inherit;
+    padding:14px;cursor:pointer;box-shadow:0 8px 18px -6px var(--a)}
+  .zc-send:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .zc-clear{display:block;margin:10px auto 0;background:none;border:0;text-decoration:underline;
+    font:700 .85rem inherit;color:var(--ink);opacity:.7;cursor:pointer}
+  .zc-root :focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  @media (max-width:640px){
+    .zc-panel{top:auto;left:0;width:100%;max-height:92vh;max-height:92dvh;border-radius:24px 24px 0 0;
+      transform:translateY(100%);box-shadow:0 -12px 40px rgba(0,0,0,.25)}
+    .zc-open .zc-panel{transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){.zc-panel,.zc-backdrop{transition:none}}
+  `;
+
+  /* ---------- HTML ---------- */
+  function build() {
+    const style = document.createElement("style");
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    const root = document.createElement("div");
+    root.className = "zc-root";
+    root.id = "zcRoot";
+    root.innerHTML = `
+      <div class="zc-backdrop" data-zc-close></div>
+      <aside class="zc-panel" role="dialog" aria-modal="true" aria-labelledby="zcTitle" tabindex="-1">
+        <header class="zc-head">
+          <h2 id="zcTitle">Pesanan Kamu</h2>
+          <button type="button" class="zc-x" data-zc-close aria-label="Tutup keranjang">✕</button>
+        </header>
+        <div class="zc-body">
+          <ul class="zc-list" id="zcList"></ul>
+          <div class="zc-empty" id="zcEmpty">
+            <div class="big" aria-hidden="true">🛒</div>
+            <p>Pesananmu masih kosong.<br>Pilih cemilan favoritmu dulu, ya.</p>
+            <a class="zc-link" href="${esc(cfg.menuHref)}" data-zc-close>Lihat Menu</a>
+          </div>
+          <div class="zc-form" id="zcForm">
+            <label for="zcName">Nama</label>
+            <input id="zcName" type="text" placeholder="Nama kamu" autocomplete="name">
+            <label for="zcNote">Catatan (opsional)</label>
+            <textarea id="zcNote" rows="2" placeholder="Contoh: alamat, jam ambil, level pedas"></textarea>
+            <div class="zc-err" id="zcErr" role="alert"></div>
+          </div>
+        </div>
+        <footer class="zc-foot">
+          <div class="zc-sum"><span>Jumlah item</span><b id="zcQty">0</b></div>
+          <div class="zc-sum" id="zcPriceRow"><span>Estimasi harga</span><b id="zcPrice"></b></div>
+          <p class="zc-note" id="zcNoteTxt">Harga akhir dan ketersediaan dikonfirmasi lewat WhatsApp.</p>
+          <button type="button" class="zc-send" id="zcSend">Kirim Pesanan via WhatsApp</button>
+          <button type="button" class="zc-clear" id="zcClear">Kosongkan pesanan</button>
+        </footer>
+      </aside>`;
+    document.body.appendChild(root);
+    return root;
+  }
+
+  /* ---------- RENDER ---------- */
+  let root, $;
+  function render() {
+    const count = items.reduce((s, i) => s + i.qty, 0);
+    const list = $("#zcList");
+    list.innerHTML = items.map((i) => {
+      const thumb = i.image
+        ? `<img src="${esc(i.image)}" alt="">`
+        : esc(i.emoji || i.name.charAt(0));
+      const price = i.price > 0 ? `${rp(i.price)} / pcs` : "Harga via chat";
+      return `<li class="zc-item" data-id="${esc(i.id)}">
+        <div class="zc-thumb" aria-hidden="true">${thumb}</div>
+        <div><div class="zc-name">${esc(i.name)}</div><div class="zc-price">${price}</div></div>
+        <div class="zc-qty">
+          <button type="button" data-act="minus" aria-label="Kurangi ${esc(i.name)}">−</button>
+          <b>${i.qty}</b>
+          <button type="button" data-act="plus" aria-label="Tambah ${esc(i.name)}">+</button>
+        </div>
+        <button type="button" class="zc-del" data-act="del">Hapus</button>
+      </li>`;
+    }).join("");
+
+    const has = items.length > 0;
+    $("#zcEmpty").hidden = has;
+    $("#zcForm").hidden = !has;
+    $("#zcSend").disabled = !has;
+    $("#zcClear").hidden = !has;
+    $("#zcQty").textContent = count;
+
+    const priced = items.filter((i) => i.price > 0);
+    const total = priced.reduce((s, i) => s + i.price * i.qty, 0);
+    $("#zcPriceRow").hidden = !priced.length;
+    $("#zcPrice").textContent = rp(total);
+    $("#zcNoteTxt").textContent = priced.length && priced.length < items.length
+      ? "Sebagian item belum ada harga, jadi total ini belum lengkap. Harga akhir dikonfirmasi lewat WhatsApp."
+      : "Harga akhir dan ketersediaan dikonfirmasi lewat WhatsApp.";
+
+    updateBadge(count);
+    try { localStorage.setItem(cfg.storageKey, JSON.stringify(items)); } catch (e) {}
+    listeners.forEach((fn) => fn(items.slice(), count));
+  }
+
+  /* ---------- BADGE & TOMBOL BUKA ---------- */
+  let openers = [];
+  function findOpeners() {
+    if (cfg.openButton) return [...document.querySelectorAll(cfg.openButton)];
+    const byAttr = [...document.querySelectorAll("[data-cart-open]")];
+    if (byAttr.length) return byAttr;
+    return [...document.querySelectorAll("button, a")].filter((el) =>
+      !el.closest(".zc-root") && /^\s*\S{0,3}\s*pesanan\b/i.test(el.textContent));
+  }
+  function updateBadge(count) {
+    const sel = cfg.badge || "[data-cart-count]";
+    const targets = document.querySelectorAll(sel);
+    if (targets.length) { targets.forEach((el) => (el.textContent = count)); return; }
+    openers.forEach((b) => b.querySelectorAll("*").forEach((el) => {
+      if (!el.children.length && /^\d+$/.test(el.textContent.trim())) el.textContent = count;
+    }));
+  }
+
+  /* ---------- BUKA / TUTUP ---------- */
+  function open() {
+    lastFocus = document.activeElement;
+    $("#zcErr").textContent = "";
+    root.classList.add("zc-open");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => root.querySelector(".zc-x").focus(), 50);
+  }
+  function close() {
+    root.classList.remove("zc-open");
+    document.body.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  /* ---------- DATA ---------- */
+  function norm(it) {
+    return {
+      id: String(it.id || slug(it.name)),
+      name: String(it.name),
+      price: Number(it.price) || 0,
+      qty: Math.max(1, parseInt(it.qty, 10) || 1),
+      emoji: it.emoji || "",
+      image: it.image || ""
+    };
+  }
+  function add(it) {
+    const n = norm(it);
+    const found = items.find((x) => x.id === n.id);
+    if (found) found.qty += n.qty; else items.push(n);
+    render();
+  }
+  function setItems(arr) { items = (arr || []).map(norm); render(); }
+  function clear() { items = []; render(); }
+
+  /* ---------- WHATSAPP ---------- */
+  function send() {
+    const name = $("#zcName").value.trim();
+    const err = $("#zcErr");
+    if (!items.length) { err.textContent = "Pilih minimal satu cemilan dulu."; return; }
+    if (!name) { err.textContent = "Isi nama kamu dulu ya."; $("#zcName").focus(); return; }
+    err.textContent = "";
+    const note = $("#zcNote").value.trim();
+    let msg = `Halo ${cfg.store}, saya ${name} ingin memesan:\n`;
+    items.forEach((i) => { msg += `- ${i.name} x${i.qty}\n`; });
+    const priced = items.filter((i) => i.price > 0);
+    if (priced.length === items.length) {
+      msg += `\nEstimasi total: ${rp(priced.reduce((s, i) => s + i.price * i.qty, 0))}`;
+    }
+    if (note) msg += `\nCatatan: ${note}`;
+    msg += `\n\nMohon konfirmasi ketersediaan dan total harganya. Terima kasih!`;
+    window.open(`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+  }
+
+  /* ---------- INIT ---------- */
+  function init() {
+    root = build();
+    $ = (s) => root.querySelector(s);
+
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-zc-close]")) { close(); return; }
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      const li = btn.closest("[data-id]");
+      const it = items.find((x) => x.id === li.dataset.id);
+      if (!it) return;
+      if (btn.dataset.act === "plus") it.qty++;
+      if (btn.dataset.act === "minus") it.qty = Math.max(1, it.qty - 1);
+      if (btn.dataset.act === "del") items = items.filter((x) => x !== it);
+      render();
+    });
+    $("#zcSend").addEventListener("click", send);
+    $("#zcClear").addEventListener("click", clear);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && root.classList.contains("zc-open")) close();
+    });
+
+    openers = findOpeners();
+    openers.forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); open(); }));
+    if (!openers.length) console.warn("[cart-ui] Tombol 'Pesanan' tidak ditemukan. Tambahkan atribut data-cart-open pada tombolnya.");
+
+    render();
+  }
+
+  window.ZemilCart = {
+    open, close, add, setItems, clear,
+    getItems: () => items.slice(),
+    onChange: (fn) => listeners.push(fn)
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
