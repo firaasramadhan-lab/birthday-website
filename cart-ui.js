@@ -38,7 +38,7 @@
   .zc-body{flex:1;overflow-y:auto;padding:16px 20px}
   .zc-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
   .zc-item{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:16px;background:#fff}
-  .zc-thumb{width:56px;height:56px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:1.8rem;overflow:hidden}.zc-thumb img{width:100%;height:100%;object-fit:cover}
+  .zc-thumb{width:56px;height:56px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:1.8rem;overflow:hidden}.zc-thumb img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
   .zc-name{font-weight:800;line-height:1.2}.zc-price{font-size:.85rem;opacity:.7;margin-top:2px}
   .zc-qty{display:flex;align-items:center;gap:6px}.zc-qty button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--soft);font-weight:800;font-size:1.05rem;cursor:pointer;color:var(--ink)}
   .zc-qty b{min-width:22px;text-align:center}.zc-del{grid-column:1/-1;justify-self:end;background:none;border:0;color:#B3341A;font-weight:700;font-size:.82rem;cursor:pointer;padding:0;margin-top:-4px}
