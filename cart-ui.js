@@ -38,7 +38,7 @@
   .zc-body{flex:1;overflow-y:auto;padding:16px 20px}
   .zc-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
   .zc-item{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:16px;background:#fff}
-  .zc-thumb{width:56px;height:56px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:1.8rem}
+  .zc-thumb{width:56px;height:56px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:1.8rem;overflow:hidden}.zc-thumb img{width:100%;height:100%;object-fit:cover}
   .zc-name{font-weight:800;line-height:1.2}.zc-price{font-size:.85rem;opacity:.7;margin-top:2px}
   .zc-qty{display:flex;align-items:center;gap:6px}.zc-qty button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--soft);font-weight:800;font-size:1.05rem;cursor:pointer;color:var(--ink)}
   .zc-qty b{min-width:22px;text-align:center}.zc-del{grid-column:1/-1;justify-self:end;background:none;border:0;color:#B3341A;font-weight:700;font-size:.82rem;cursor:pointer;padding:0;margin-top:-4px}
@@ -89,8 +89,9 @@
   function render() {
     const count = items.reduce((s, i) => s + i.qty, 0);
     $("#zcList").innerHTML = items.map((i) => {
+      const thumb = i.image ? `<img src="${esc(i.image)}" alt="">` : esc(i.emoji || i.name.charAt(0));
       const price = i.price > 0 ? `${rp(i.price)} / pcs` : "Harga via chat";
-      return `<li class="zc-item" data-id="${esc(i.id)}"><div class="zc-thumb" aria-hidden="true">${esc(i.emoji || i.name.charAt(0))}</div><div><div class="zc-name">${esc(i.name)}</div><div class="zc-price">${price}</div></div><div class="zc-qty"><button type="button" data-act="minus" aria-label="Kurangi ${esc(i.name)}">−</button><b>${i.qty}</b><button type="button" data-act="plus" aria-label="Tambah ${esc(i.name)}">+</button></div><button type="button" class="zc-del" data-act="del">Hapus</button></li>`;
+      return `<li class="zc-item" data-id="${esc(i.id)}"><div class="zc-thumb" aria-hidden="true">${thumb}</div><div><div class="zc-name">${esc(i.name)}</div><div class="zc-price">${price}</div></div><div class="zc-qty"><button type="button" data-act="minus" aria-label="Kurangi ${esc(i.name)}">−</button><b>${i.qty}</b><button type="button" data-act="plus" aria-label="Tambah ${esc(i.name)}">+</button></div><button type="button" class="zc-del" data-act="del">Hapus</button></li>`;
     }).join("");
 
     const has = items.length > 0;
@@ -126,7 +127,7 @@
   }
 
   function norm(it) {
-    return { id: String(it.id || slug(it.name)), name: String(it.name), price: Number(it.price) || 0, qty: Math.max(1, parseInt(it.qty, 10) || 1), emoji: it.emoji || "" };
+    return { id: String(it.id || slug(it.name)), name: String(it.name), price: Number(it.price) || 0, qty: Math.max(1, parseInt(it.qty, 10) || 1), emoji: it.emoji || "", image: it.image || "" };
   }
 
   function add(it) {

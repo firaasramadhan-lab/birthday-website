@@ -14,7 +14,8 @@
     button,input,textarea { font:inherit; }
     .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; min-height:72px; padding:10px 6%; background:rgba(255,248,239,.94); backdrop-filter:blur(12px); border-bottom:1px solid #f1dfd1; }
     .brand { display:flex; align-items:center; gap:10px; font-size:23px; font-weight:900; }
-    .brand-mark { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; background:var(--orange); color:white; box-shadow:0 8px 20px #ff6b3538; }
+    .brand-mark { display:grid; place-items:center; width:42px; height:42px; overflow:hidden; border-radius:14px; background:white; box-shadow:0 8px 20px #ff6b3538; }
+    .brand-mark img { width:100%; height:100%; object-fit:contain; }
     .nav-links { display:flex; align-items:center; gap:28px; font-weight:700; }
     .nav-toggle { display:none; border:0; background:transparent; font-size:24px; }
     .hero { display:grid; grid-template-columns:1.1fr .9fr; align-items:center; max-width:1180px; min-height:520px; margin:auto; padding:70px 5%; }
@@ -38,6 +39,7 @@
     .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin-top:28px; }
     .card { min-width:0; padding:20px; border:1px solid #ecdfd3; border-radius:24px; background:white; box-shadow:0 12px 32px #704a3510; }
     .emoji { display:grid; place-items:center; height:150px; border-radius:18px; background:#fff4e8; font-size:68px; }
+    .emoji img { width:100%; height:100%; border-radius:18px; object-fit:cover; }
     .card h3 { margin:16px 0 6px; font-size:21px; }
     .tag { display:inline-block; margin:4px 0 10px; padding:5px 8px; border-radius:999px; background:#f2eee9; color:var(--muted); font-size:12px; }
     .card p { min-height:44px; color:var(--muted); line-height:1.5; }
@@ -57,7 +59,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Beranda Zemil.in"><span class="brand-mark">Z</span><span>Zemil.in</span></a>
+    <a class="brand" href="#" aria-label="Beranda Zemil.in"><span class="brand-mark"><img src="logo.png" alt="Logo Zemil.in"></span><span>Zemil.in</span></a>
     <nav class="nav-links" id="navLinks"><a href="#menu">Menu</a><a href="#tentang">Tentang</a><a id="waLink" href="#">WhatsApp</a></nav>
     <button class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false">☰</button>
   </header>
@@ -83,7 +85,7 @@ const PRODUCTS = [
   { id: "usus", name: "Usus Krispi", type: "gurih", emoji: "🍢", desc: "Renyah, cocok untuk teman ngemil.", price: 0 },
   { id: "cimol", name: "Cimol", type: "gurih", emoji: "🧆", desc: "Bulat mungil, kenyal di dalam.", price: 0 },
   { id: "kaca", name: "Keripik Kaca", type: "gurih", emoji: "🥠", desc: "Tipis dan renyah.", price: 0 },
-  { id: "soes", name: "Kue Soes", type: "manis", emoji: "🍩", desc: "Kue soes ukuran mini.", price: 0 },
+  { id: "soes", name: "Kue Soes", type: "manis", emoji: "🍩", image: "WhatsApp%20Image%202026-11-26%20at%2009.52.33.jpeg", desc: "Kue soes ukuran mini.", price: 0 },
   { id: "basreng", name: "Basreng", type: "gurih", emoji: "🍥", desc: "Bakso goreng yang digoreng garing.", price: 0 },
   { id: "donat", name: "Donat Mini", type: "manis", emoji: "🍩", desc: "Donat kecil, sekali gigit.", price: 0 },
   { id: "makaroni", name: "Makaroni", type: "gurih", emoji: "🍝", desc: "Makaroni goreng renyah.", price: 0 },
@@ -100,7 +102,7 @@ function renderMenu(filter = "semua") {
     let qty = 1;
     const card = document.createElement("article");
     card.className = "card";
-    card.innerHTML = `<div class="emoji" aria-hidden="true">${p.emoji}</div><h3>${p.name}</h3><span class="tag">${p.type === "manis" ? "Manis" : "Gurih"}</span><p>${p.desc}</p><span class="price">${p.price > 0 ? "Rp" + p.price.toLocaleString("id-ID") : "Harga via chat"}</span><div class="qty"><button type="button" data-act="minus" aria-label="Kurangi ${p.name}">−</button><output>${qty}</output><button type="button" data-act="plus" aria-label="Tambah ${p.name}">+</button></div><button type="button" class="btn" data-act="add">Tambah ke Pesanan</button>`;
+    card.innerHTML = `<div class="emoji" aria-hidden="true">${p.image ? `<img src="${p.image}" alt="${p.name}">` : p.emoji}</div><h3>${p.name}</h3><span class="tag">${p.type === "manis" ? "Manis" : "Gurih"}</span><p>${p.desc}</p><span class="price">${p.price > 0 ? "Rp" + p.price.toLocaleString("id-ID") : "Harga via chat"}</span><div class="qty"><button type="button" data-act="minus" aria-label="Kurangi ${p.name}">−</button><output>${qty}</output><button type="button" data-act="plus" aria-label="Tambah ${p.name}">+</button></div><button type="button" class="btn" data-act="add">Tambah ke Pesanan</button>`;
     card.addEventListener("click", (e) => {
       const act = e.target.dataset.act;
       if (!act) return;
@@ -108,8 +110,8 @@ function renderMenu(filter = "semua") {
       if (act === "minus") qty = Math.max(1, qty - 1);
       card.querySelector("output").textContent = qty;
       if (act === "add") {
-        if (window.ZemilCart) window.ZemilCart.add({ id: p.id, name: p.name, price: p.price, qty, emoji: p.emoji });
-        else setTimeout(() => window.ZemilCart?.add({ id: p.id, name: p.name, price: p.price, qty, emoji: p.emoji }), 100);
+        if (window.ZemilCart) window.ZemilCart.add({ id: p.id, name: p.name, price: p.price, qty, emoji: p.emoji, image: p.image || "" });
+        else setTimeout(() => window.ZemilCart?.add({ id: p.id, name: p.name, price: p.price, qty, emoji: p.emoji, image: p.image || "" }), 100);
         const toast = $("#toast");
         toast.textContent = `${qty} ${p.name} masuk pesanan`;
         toast.classList.add("show");
