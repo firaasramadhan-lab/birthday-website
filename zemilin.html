@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff6b35">
+  <title>Zemil.in — Cemilan Renyah</title>
+  <style>
+    :root { --orange:#ff6b35; --cream:#fff8ef; --dark:#2b1a10; --muted:#7d6d63; --pink:#ffe8dc; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; font-family:Inter,Segoe UI,Arial,sans-serif; background:var(--cream); color:var(--dark); }
+    a { color:inherit; text-decoration:none; }
+    button,input,textarea { font:inherit; }
+    .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; min-height:72px; padding:10px 6%; background:rgba(255,248,239,.94); backdrop-filter:blur(12px); border-bottom:1px solid #f1dfd1; }
+    .brand { display:flex; align-items:center; gap:10px; font-size:23px; font-weight:900; }
+    .brand-mark { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; background:var(--orange); color:white; box-shadow:0 8px 20px #ff6b3538; }
+    .nav-links { display:flex; align-items:center; gap:28px; font-weight:700; }
+    .nav-toggle { display:none; border:0; background:transparent; font-size:24px; }
+    .hero { display:grid; grid-template-columns:1.1fr .9fr; align-items:center; max-width:1180px; min-height:520px; margin:auto; padding:70px 5%; }
+    .eyebrow { display:inline-block; margin-bottom:14px; padding:7px 12px; border-radius:999px; background:#ffe5d6; color:#c84d20; font-size:13px; font-weight:800; }
+    h1 { max-width:650px; margin:0 0 18px; font-size:clamp(44px,7vw,78px); line-height:.98; letter-spacing:-4px; }
+    h1 span { color:var(--orange); }
+    .hero p { max-width:560px; color:var(--muted); font-size:18px; line-height:1.7; }
+    .hero-actions { display:flex; gap:12px; margin-top:28px; }
+    .primary,.secondary { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 20px; border-radius:14px; border:0; font-weight:800; cursor:pointer; }
+    .primary { background:var(--orange); color:white; box-shadow:0 12px 24px #ff6b3538; }
+    .secondary { background:white; border:1px solid #ead9cb; }
+    .hero-art { position:relative; display:grid; place-items:center; min-height:360px; }
+    .hero-circle { width:min(360px,78vw); aspect-ratio:1; display:grid; place-items:center; border-radius:50%; background:linear-gradient(145deg,#ffc66b,#ff7b4d); box-shadow:0 30px 60px #bb572b2e; font-size:150px; transform:rotate(-8deg); }
+    .menu-section { max-width:1180px; margin:auto; padding:40px 5% 90px; }
+    .section-head { display:flex; align-items:end; justify-content:space-between; gap:20px; }
+    .section-head h2 { margin:0; font-size:42px; letter-spacing:-2px; }
+    .filters { display:flex; gap:8px; }
+    .chip { padding:9px 15px; border:1px solid #ead9cb; border-radius:999px; background:white; cursor:pointer; font-weight:800; }
+    .chip.active { border-color:var(--orange); background:var(--orange); color:white; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin-top:28px; }
+    .card { min-width:0; padding:20px; border:1px solid #ecdfd3; border-radius:24px; background:white; box-shadow:0 12px 32px #704a3510; }
+    .emoji { display:grid; place-items:center; height:150px; border-radius:18px; background:#fff4e8; font-size:68px; }
+    .card h3 { margin:16px 0 6px; font-size:21px; }
+    .tag { display:inline-block; margin:4px 0 10px; padding:5px 8px; border-radius:999px; background:#f2eee9; color:var(--muted); font-size:12px; }
+    .card p { min-height:44px; color:var(--muted); line-height:1.5; }
+    .price { display:block; margin:12px 0; color:#c84d20; font-weight:900; }
+    .qty { display:grid; grid-template-columns:42px 1fr 42px; align-items:center; margin:14px 0 10px; }
+    .qty button,.mini button { height:38px; border:1px solid #e6d7ca; border-radius:10px; background:#fff; cursor:pointer; }
+    .qty output { text-align:center; font-weight:900; }
+    .btn { width:100%; min-height:44px; border:0; border-radius:12px; background:var(--dark); color:white; font-weight:800; cursor:pointer; }
+    .cart-fab { position:fixed; z-index:30; right:24px; bottom:24px; display:flex; align-items:center; gap:9px; min-height:56px; padding:0 18px; border:0; border-radius:999px; background:var(--orange); color:white; font-weight:900; box-shadow:0 14px 30px #a94a2780; cursor:pointer; }
+    .cart-fab.pop { animation:pop .35s ease; } @keyframes pop { 50% { transform:scale(1.12); } }
+    #cartCount { display:grid; place-items:center; min-width:25px; height:25px; border-radius:50%; background:white; color:var(--orange); }
+    #backdrop { position:fixed; z-index:39; inset:0; background:#25170e66; backdrop-filter:blur(3px); }
+    .sheet { position:fixed; z-index:40; right:0; bottom:0; width:min(430px,100%); height:100%; padding:24px; background:white; transform:translateX(100%); transition:.35s ease; box-shadow:-20px 0 50px #2d1b1226; }
+    .sheet.open { transform:translateX(0); }
+    .sheet-head { display:flex; align-items:center; justify-content:space-between; }
+    #closeSheet { width:38px; height:38px; border:0; border-radius:50%; background:#f2eee9; cursor:pointer; }
+    #cartList { list-style:none; padding:0; }
+    #cartList li { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid #eee5dc; }
+    .mini { display:flex; align-items:center; gap:8px; }.mini button { width:32px; }.mini b { min-width:20px; text-align:center; }
+    .checkout { display:grid; gap:9px; margin-top:18px; }
+    .checkout input,.checkout textarea { width:100%; border:1px solid #dfd1c3; border-radius:10px; padding:12px; outline:none; }
+    .checkout textarea { min-height:70px; resize:vertical; }
+    #cartEmpty,#cartTotal { color:var(--muted); }
+    #cartTotal { margin:14px 0; font-weight:900; color:var(--dark); }
+    .toast { position:fixed; z-index:60; left:50%; bottom:-80px; transform:translateX(-50%); padding:12px 18px; border-radius:12px; background:#2b1a10; color:white; transition:.25s; }.toast.show { bottom:28px; }
+    footer { padding:30px 5%; border-top:1px solid #eadfd4; text-align:center; color:var(--muted); }
+    @media (max-width:850px) { .hero { grid-template-columns:1fr; text-align:center; padding-top:45px; }.hero p { margin-inline:auto; }.hero-actions,.section-head { justify-content:center; }.hero-art { margin-top:30px; }.grid { grid-template-columns:repeat(2,1fr); }.section-head { align-items:center; flex-direction:column; }.nav-links { display:none; position:absolute; top:72px; right:5%; flex-direction:column; gap:12px; width:180px; padding:16px; border-radius:16px; background:white; box-shadow:0 15px 40px #2d1b1224; }.nav-links.open { display:flex; }.nav-toggle { display:block; } }
+    @media (max-width:560px) { h1 { letter-spacing:-2px; }.grid { grid-template-columns:1fr; }.hero-actions { flex-direction:column; }.hero-circle { font-size:100px; }.menu-section { padding-inline:16px; }.filters { width:100%; overflow-x:auto; }.section-head h2 { font-size:34px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Beranda Zemil.in"><span class="brand-mark">Z</span><span>Zemil.in</span></a>
+    <nav class="nav-links" id="navLinks"><a href="#menu">Menu</a><a href="#tentang">Tentang</a><a id="waLink" href="#">WhatsApp</a></nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false">☰</button>
+  </header>
+  <main>
+    <section class="hero" id="tentang">
+      <div><span class="eyebrow">Cemilan rumahan • fresh setiap hari</span><h1>Cemilan renyah untuk <span>hari seru.</span></h1><p>Pilih camilan favoritmu, atur jumlah pesanan, lalu kirim langsung melalui WhatsApp untuk konfirmasi ketersediaan dan harga.</p><div class="hero-actions"><a class="primary" href="#menu">Lihat Menu</a><a class="secondary" href="#tentang">Tentang Kami</a></div></div>
+      <div class="hero-art"><div class="hero-circle">🥨</div></div>
+    </section>
+    <section class="menu-section" id="menu">
+      <div class="section-head"><h2>Pilih Cemilan</h2><div class="filters"><button class="chip active" data-filter="semua">Semua</button><button class="chip" data-filter="gurih">Gurih</button><button class="chip" data-filter="manis">Manis</button></div></div>
+      <div class="grid" id="menuGrid"></div>
+    </section>
+  </main>
+  <button class="cart-fab" id="cartFab" aria-label="Buka keranjang">🛒 <span>Pesanan</span><span id="cartCount">0</span></button>
+  <div id="backdrop" hidden></div>
+  <aside class="sheet" id="sheet" aria-hidden="true"><div class="sheet-head"><h2>Pesananmu</h2><button id="closeSheet" aria-label="Tutup">✕</button></div><p id="cartEmpty">Keranjang masih kosong.</p><ul id="cartList"></ul><p id="cartTotal" hidden></p><div class="checkout"><input id="custName" placeholder="Nama kamu" autocomplete="name"><textarea id="custNote" placeholder="Catatan pesanan (opsional)"></textarea><button class="primary" id="sendWA">Kirim Pesanan via WhatsApp</button></div></aside>
+  <div class="toast" id="toast"></div>
+  <footer>© <span id="year"></span> Zemil.in — Cemilan rumahan yang bikin hari lebih seru.</footer>
+<script>
+/* ===== PENGATURAN TOKO (ubah di sini) ===== */
+const WA_NUMBER = "6281389900332"; // 0813-8990-0332 dalam format internasional
+const STORE_NAME = "Zemil.in";
+
+/* Isi price dengan harga (angka, Rupiah) jika sudah siap.
+   Jika price = 0, harga tidak ditampilkan dan pembeli diminta konfirmasi lewat chat. */
+const PRODUCTS = [
+  { id: "usus",   name: "Usus Krispi",    type: "gurih", emoji: "🍢", desc: "Renyah, cocok untuk teman ngemil.", price: 0 },
+  { id: "cimol",  name: "Cimol",          type: "gurih", emoji: "🧆", desc: "Bulat mungil, kenyal di dalam.",    price: 0 },
+  { id: "kaca",   name: "Keripik Kaca",   type: "gurih", emoji: "🥠", desc: "Tipis dan renyah.",                 price: 0 },
+  { id: "soes",   name: "Kue Soes",       type: "manis", emoji: "🍩", desc: "Kue soes ukuran mini.",             price: 0 },
+  { id: "basreng",name: "Basreng",        type: "gurih", emoji: "🍥", desc: "Bakso goreng yang digoreng garing.",price: 0 },
+  { id: "donat",  name: "Donat Mini",     type: "manis", emoji: "🍩", desc: "Donat kecil, sekali gigit.",        price: 0 },
+  { id: "makaroni",name:"Makaroni",       type: "gurih", emoji: "🍝", desc: "Makaroni goreng renyah.",           price: 0 },
+  { id: "singkong",name:"Keripik Singkong",type:"gurih", emoji: "🥔", desc: "Irisan singkong goreng.",           price: 0 },
+  { id: "tahu",   name: "Tahu Bulat",     type: "gurih", emoji: "🟡", desc: "Tahu bulat goreng.",                price: 0 }
+];
+
+/* ===== STATE ===== */
+const cart = {};      // { id: jumlah }
+const picking = {};   // jumlah sementara di kartu
+const $ = (s) => document.querySelector(s);
+const rupiah = (n) => "Rp" + n.toLocaleString("id-ID");
+
+/* ===== Menu ===== */
+function renderMenu(filter = "semua") {
+  const grid = $("#menuGrid");
+  grid.innerHTML = "";
+  PRODUCTS.filter(p => filter === "semua" || p.type === filter).forEach(p => {
+    picking[p.id] = picking[p.id] || 1;
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="emoji" aria-hidden="true">${p.emoji}</div>
+      <h3>${p.name}</h3>
+      <span class="tag">${p.type === "manis" ? "Manis" : "Gurih"}</span>
+      <p>${p.desc}</p>
+      <span class="price">${p.price > 0 ? rupiah(p.price) : "Harga via chat"}</span>
+      <div class="qty">
+        <button type="button" data-act="minus" aria-label="Kurangi ${p.name}">−</button>
+        <output id="q-${p.id}">${picking[p.id]}</output>
+        <button type="button" data-act="plus" aria-label="Tambah ${p.name}">+</button>
+      </div>
+      <button type="button" class="btn" data-act="add">Tambah ke Pesanan</button>`;
+    card.addEventListener("click", (e) => {
+      const act = e.target.dataset.act;
+      if (!act) return;
+      if (act === "plus") picking[p.id]++;
+      if (act === "minus") picking[p.id] = Math.max(1, picking[p.id] - 1);
+      card.querySelector("output").textContent = picking[p.id];
+      if (act === "add") {
+        cart[p.id] = (cart[p.id] || 0) + picking[p.id];
+        toast(`${picking[p.id]} ${p.name} masuk pesanan`);
+        picking[p.id] = 1;
+        card.querySelector("output").textContent = 1;
+        updateCart();
+      }
+    });
+    grid.appendChild(card);
+  });
+}
+
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    renderMenu(chip.dataset.filter);
+  });
+});
+
+/* ===== Keranjang ===== */
+function updateCart() {
+  const ids = Object.keys(cart).filter(id => cart[id] > 0);
+  const count = ids.reduce((s, id) => s + cart[id], 0);
+  $("#cartCount").textContent = count;
+  $("#cartFab").classList.remove("pop");
+  void $("#cartFab").offsetWidth;
+  $("#cartFab").classList.add("pop");
+
+  const list = $("#cartList");
+  list.innerHTML = "";
+  let total = 0, allPriced = true;
+  ids.forEach(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (p.price > 0) total += p.price * cart[id]; else allPriced = false;
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${p.name}</span>
+      <span class="mini">
+        <button type="button" data-id="${id}" data-d="-1" aria-label="Kurangi ${p.name}">−</button>
+        <b>${cart[id]}</b>
+        <button type="button" data-id="${id}" data-d="1" aria-label="Tambah ${p.name}">+</button>
+      </span>`;
+    list.appendChild(li);
+  });
+  $("#cartEmpty").hidden = ids.length > 0;
+  const totalEl = $("#cartTotal");
+  totalEl.hidden = !(ids.length && total > 0);
+  totalEl.textContent = (allPriced ? "Total: " : "Perkiraan (belum semua ada harga): ") + rupiah(total);
+}
+
+$("#cartList").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-id]");
+  if (!b) return;
+  cart[b.dataset.id] = Math.max(0, cart[b.dataset.id] + Number(b.dataset.d));
+  updateCart();
+});
+
+$("#clearCart").addEventListener("click", () => {
+  Object.keys(cart).forEach(k => delete cart[k]);
+  updateCart();
+});
+
+const sheet = $("#sheet"), backdrop = $("#backdrop");
+function openSheet(open) {
+  sheet.classList.toggle("open", open);
+  sheet.setAttribute("aria-hidden", String(!open));
+  backdrop.hidden = !open;
+}
+$("#cartFab").addEventListener("click", () => openSheet(true));
+$("#closeSheet").addEventListener("click", () => openSheet(false));
+backdrop.addEventListener("click", () => openSheet(false));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") openSheet(false); });
+
+/* ===== Kirim ke WhatsApp ===== */
+$("#sendWA").addEventListener("click", () => {
+  const ids = Object.keys(cart).filter(id => cart[id] > 0);
+  if (!ids.length) { toast("Pilih minimal satu varian dulu"); return; }
+  const name = $("#custName").value.trim();
+  if (!name) { toast("Isi nama dulu ya"); $("#custName").focus(); return; }
+  const note = $("#custNote").value.trim();
+  let msg = `Halo ${STORE_NAME}, saya ${name} ingin pesan:\n`;
+  ids.forEach(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    msg += `- ${p.name} x${cart[id]}\n`;
+  });
+  if (note) msg += `\nCatatan: ${note}`;
+  msg += `\n\nMohon info total harga dan ketersediaannya. Terima kasih!`;
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+});
+
+/* ===== Umum ===== */
+function toast(text) {
+  const t = $("#toast");
+  t.textContent = text;
+  t.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+$("#navToggle").addEventListener("click", () => {
+  const open = $("#navLinks").classList.toggle("open");
+  $("#navToggle").setAttribute("aria-expanded", String(open));
+});
+document.querySelectorAll("#navLinks a").forEach(a =>
+  a.addEventListener("click", () => $("#navLinks").classList.remove("open")));
+
+$("#waLink").href = `https://wa.me/${WA_NUMBER}`;
+$("#year").textContent = new Date().getFullYear();
+
+renderMenu();
+updateCart();
+</script>
+</body>
+</html>
