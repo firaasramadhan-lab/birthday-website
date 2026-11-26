@@ -59,7 +59,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Beranda Zemil.in"><span class="brand-mark"><img src="logo.png" alt="Logo Zemil.in"></span><span>Zemil.in</span></a>
+    <a class="brand" href="#" aria-label="Beranda Zemil.in"><span class="brand-mark"><img src="logo.png?v=2" alt="Logo Zemil.in"></span><span>Zemil.in</span></a>
     <nav class="nav-links" id="navLinks"><a href="#menu">Menu</a><a href="#tentang">Tentang</a><a id="waLink" href="#">WhatsApp</a></nav>
     <button class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false">☰</button>
   </header>
@@ -85,7 +85,7 @@ const PRODUCTS = [
   { id: "usus", name: "Usus Krispi", type: "gurih", emoji: "🍢", desc: "Renyah, cocok untuk teman ngemil.", price: 0 },
   { id: "cimol", name: "Cimol", type: "gurih", emoji: "🧆", desc: "Bulat mungil, kenyal di dalam.", price: 0 },
   { id: "kaca", name: "Keripik Kaca", type: "gurih", emoji: "🥠", desc: "Tipis dan renyah.", price: 0 },
-  { id: "soes", name: "Kue Soes", type: "manis", emoji: "🍩", image: "WhatsApp%20Image%202026-11-26%20at%2009.52.33.jpeg", desc: "Kue soes ukuran mini.", price: 0 },
+  { id: "soes", name: "Kue Soes", type: "manis", emoji: "🍩", image: "WhatsApp Image 2026-11-26 at 09.52.33.jpeg?v=2", desc: "Kue soes ukuran mini.", price: 0 },
   { id: "basreng", name: "Basreng", type: "gurih", emoji: "🍥", desc: "Bakso goreng yang digoreng garing.", price: 0 },
   { id: "donat", name: "Donat Mini", type: "manis", emoji: "🍩", desc: "Donat kecil, sekali gigit.", price: 0 },
   { id: "makaroni", name: "Makaroni", type: "gurih", emoji: "🍝", desc: "Makaroni goreng renyah.", price: 0 },
@@ -102,7 +102,46 @@ function renderMenu(filter = "semua") {
     let qty = 1;
     const card = document.createElement("article");
     card.className = "card";
-    card.innerHTML = `<div class="emoji" aria-hidden="true">${p.image ? `<img src="${p.image}" alt="${p.name}">` : p.emoji}</div><h3>${p.name}</h3><span class="tag">${p.type === "manis" ? "Manis" : "Gurih"}</span><p>${p.desc}</p><span class="price">${p.price > 0 ? "Rp" + p.price.toLocaleString("id-ID") : "Harga via chat"}</span><div class="qty"><button type="button" data-act="minus" aria-label="Kurangi ${p.name}">−</button><output>${qty}</output><button type="button" data-act="plus" aria-label="Tambah ${p.name}">+</button></div><button type="button" class="btn" data-act="add">Tambah ke Pesanan</button>`;
+
+    // Render visual produk (logo Soes dan emoji untuk produk lain)
+    const visual = document.createElement("div");
+    visual.className = "emoji";
+    visual.setAttribute("aria-hidden", "true");
+    if (p.image) {
+      const photo = document.createElement("img");
+      photo.src = p.image;
+      photo.alt = p.name;
+      photo.loading = "eager";
+      visual.appendChild(photo);
+    } else {
+      visual.textContent = p.emoji;
+    }
+
+    const title = document.createElement("h3");
+    title.textContent = p.name;
+
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = p.type === "manis" ? "Manis" : "Gurih";
+
+    const description = document.createElement("p");
+    description.textContent = p.desc;
+
+    const price = document.createElement("span");
+    price.className = "price";
+    price.textContent = p.price > 0 ? "Rp" + p.price.toLocaleString("id-ID") : "Harga via chat";
+
+    const qtyBox = document.createElement("div");
+    qtyBox.className = "qty";
+    qtyBox.innerHTML = '<button type="button" data-act="minus">−</button><output>1</output><button type="button" data-act="plus">+</button>';
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn";
+    addButton.dataset.act = "add";
+    addButton.textContent = "Tambah ke Pesanan";
+
+    card.append(visual, title, tag, description, price, qtyBox, addButton);
     card.addEventListener("click", (e) => {
       const act = e.target.dataset.act;
       if (!act) return;
